@@ -1,0 +1,9 @@
+---
+# This playbook stops all running httpd and tomcat server instances.
+
+- hosts: web-servers
+  become: yes
+  become_method: sudo
+
+  roles:
+    - stop-apache

@@ -1,0 +1,7 @@
+---
+# Start Apache Proxy/Web Server.
+
+- name: restart apache
+  shell: /opt/jbcs-httpd24-2.4/httpd/sbin/apachectl start
+  args:
+    executable: /bin/bash

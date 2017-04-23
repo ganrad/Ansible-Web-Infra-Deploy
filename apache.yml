@@ -1,0 +1,11 @@
+---
+# This playbook a) Installs and deploys Apache httpd proxy/web server and b) Installs and deploys multiple instances of Apache Tomcat 8 Servers on multiple hosts.
+# The Tomcat instances are front ended by a proxy/lb server (Apache httpd)
+
+- hosts: web-servers
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - apacheHttpd

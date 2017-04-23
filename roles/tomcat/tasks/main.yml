@@ -1,0 +1,138 @@
+---
+- name: Install Java 1.8
+  yum: name=java-1.8.0-openjdk state=present
+
+- name: Add tomcat group
+  group: name=tomcat
+
+- name: Add tomcat user
+  user: name=tomcat group=tomcat home=/home/tomcat createhome=yes
+
+- name: Copy and unarchive the latest version of Apache Tomcat v8
+  unarchive:
+    src: jws-application-servers-3.1.0-RHEL7-x86_64.zip
+    copy: yes
+    creates: /home/tomcat/jws-3.1
+    dest: /home/tomcat
+
+- name: Create tomcat8 instances directory
+  file:
+    path: /home/tomcat/jws-3.1/tomcat8/instances
+    state: directory
+    mode: 0755
+
+- name: Create the required no. of node directories (tomcat instance root)
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - bin
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/bin"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy tomcat-juli.jar to bin
+  copy: src=bin/tomcat-juli.jar dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/bin" mode=0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy startup.sh script to bin
+  template: src=startup.j2 dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/bin/startup.sh" mode=0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy shutdown.sh script to bin
+  template: src=shutdown.j2 dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/bin/shutdown.sh" mode=0755
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - lib
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/lib"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - logs
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/logs"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - temp
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/temp"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - webapps
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/webapps"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy all WARs to webapps 
+  copy: src=webapps/ dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/webapps" mode=0755
+  with_dict: "{{ nodes }}"
+  notify: restart tomcat
+
+- name: Create tomcat instance sub directory - conf
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf"
+    state: directory
+    mode: 0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy all config. files to conf
+  copy: src=conf/ dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf"
+  with_dict: "{{ nodes }}"
+
+- name: Create tomcat instance sub directory - conf/Catalina/host_name
+  file:
+    path: "/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf/Catalina/{{ inventory_hostname }}"
+    state: directory
+  with_dict: "{{ nodes }}"
+
+- name: Copy manager.xml (Context) to conf/Catalina/host_name
+  copy: src=Catalina/manager.xml dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf/Catalina/{{ inventory_hostname }}"
+  with_dict: "{{ nodes }}"
+
+- name: Copy tomcat-users.xml script to conf
+  template: src=tomcat-users.j2 dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf/tomcat-users.xml" mode=0755
+  with_dict: "{{ nodes }}"
+
+- name: Copy server.xml script to conf
+  template: src=server.j2 dest="/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/conf/server.xml" mode=0755
+  with_dict: "{{ nodes }}"
+  notify: restart tomcat
+
+- name: Change owner [tomcat:tomcat] and permissions [0755] of Tomcat Home
+  file:
+    path: "/home/tomcat"
+    mode: 0755
+    state: directory
+    recurse: yes
+    owner: tomcat
+    group: tomcat
+
+- name: Insert firewalld rule for tomcat http port (RHEL/CentOS 7.x)
+  firewalld: port={{ item.value.http_port }}/tcp permanent=true state=enabled immediate=yes
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+  with_dict: "{{ nodes }}"
+
+- name: Insert firewalld rule for tomcat ajp port (RHEL/CentOS 7.x)
+  firewalld: port={{ item.value.ajp_port }}/tcp permanent=true state=enabled immediate=yes
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+  with_dict: "{{ nodes }}"
+
+- name: Print the mod cluster advertisement port no.
+  debug: 
+    msg: "mod_cluster UDP advertisement port: {{ apache_adv_port }}"
+
+- name: Insert firewalld rule for listening to proxy server adv. (RHEL/CentOS 7.x)
+  firewalld: port={{ apache_adv_port }}/udp permanent=true state=enabled immediate=yes
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"

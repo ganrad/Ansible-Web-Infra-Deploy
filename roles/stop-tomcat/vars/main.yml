@@ -1,0 +1,7 @@
+---
+nodes:
+  node01:
+    name: node01
+    http_port: 8080
+    ajp_port: 8009
+    shutdown_port: 8005

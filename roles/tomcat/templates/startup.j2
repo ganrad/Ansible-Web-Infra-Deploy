@@ -1,0 +1,10 @@
+JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
+CATALINA_HOME=/home/tomcat/jws-3.1/tomcat8
+CATALINA_BASE=/home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}
+CATALINA_OPTS="-Xms512m -Xmx750m"
+JAVA_OPTS="-Dorg.jboss.modcluster.container.catalina.status-frequency=6 -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true"
+CATALINA_PID="${CATALINA_BASE}/tomcat.pid"
+export JAVA_HOME JAVA_OPTS CATALINA_HOME CATALINA_BASE CATALINA_OPTS CATALINA_PID
+
+nohup $CATALINA_HOME/bin/catalina.sh start
+#/opt/jws-3.1/tomcat8/bin/startup.sh

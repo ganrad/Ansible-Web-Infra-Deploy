@@ -1,0 +1,12 @@
+---
+# Stop Apache Server and delete the install directory.
+
+- name: Stop Apache Httpd server
+  shell: /opt/jbcs-httpd24-2.4/httpd/sbin/apachectl stop
+  args:
+    executable: /bin/bash
+
+- name: Delete Apache httpd install directory
+  file:
+    path: /opt/jbcs-httpd24-2.4
+    state: absent

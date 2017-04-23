@@ -1,0 +1,9 @@
+---
+- name: restart tomcat
+  shell: /home/tomcat/jws-3.1/tomcat8/instances/{{ item.value.name }}/bin/startup.sh
+  args:
+    executable: /bin/bash
+  with_dict: "{{ nodes }}"
+  become: yes
+  become_user: tomcat
+  become_method: sudo

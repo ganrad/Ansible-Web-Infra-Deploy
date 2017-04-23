@@ -1,0 +1,6 @@
+# Define variables for the Apache Web/HTTP server
+
+apache_http_port: 80
+apache_https_port: 443
+
+apache_ajp_port: 9091

@@ -1,0 +1,74 @@
+---
+# Tasks for installing and running Red Hat JCS Apache httpd (2.4) server.
+
+- name: Add apache group
+  group:
+    name: apache
+    gid: 48
+    system: yes
+
+- name: Add apache user
+  user:
+    name: apache
+    createhome: no
+    comment: Apache
+    uid: 48
+    group: apache
+    system: yes
+
+- name: Copy and unarchive the latest version of Apache Httpd 2.4 - RH JCS
+  unarchive:
+    src: jbcs-httpd24-httpd-2.4.23-RHEL7-x86_64.zip
+    copy: yes
+    creates: /opt/jbcs-httpd24-2.4
+    dest: /opt
+
+- name: Disable SSL [Rename file to re-enable]
+  command: mv /opt/jbcs-httpd24-2.4/httpd/conf.d/ssl.conf /opt/jbcs-httpd24-2.4/httpd/conf.d/ssl.conf.disabled
+  ignore_errors: True
+
+- name: Update mod_cluster configuration file
+  template: src=mod_cluster.conf dest="/opt/jbcs-httpd24-2.4/httpd/conf.d"
+
+- name: Copy welcome.conf to HTTPD_HOME/conf.d
+  copy: src=welcome.conf dest="/opt/jbcs-httpd24-2.4/httpd/conf.d"
+
+- name: Update httpd.conf configuration file
+  template: src=httpd.conf dest="/opt/jbcs-httpd24-2.4/httpd/conf"
+
+- name: Copy 00-mpm.conf to HTTPD_HOME/conf.modules.d
+  copy: src=00-mpm.conf dest="/opt/jbcs-httpd24-2.4/httpd/conf.modules.d"
+
+- name: Copy mime.types to HTTPD_HOME/
+  copy: src=mime.types dest="/opt/jbcs-httpd24-2.4/httpd"
+
+- name: Run postinstall command
+  shell: ./.postinstall
+  args:
+    chdir: /opt/jbcs-httpd24-2.4/httpd
+  notify: restart apache
+
+- name: Change owner [apache:apache] and permissions [0755] of httpd_home
+  file:
+    path: "/opt/jbcs-httpd24-2.4"
+    mode: 0755
+    state: directory
+    recurse: yes
+    owner: apache
+    group: apache
+
+- name: Print Apache Httpd listen port no.
+  debug:
+    msg: "Apache Httpd listen port no: {{ apache_http_port }}"
+
+- name: Insert firewalld rule for apache httpd port (RHEL/CentOS 7.x)
+  firewalld: port={{ apache_http_port }}/tcp permanent=true state=enabled immediate=yes
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"
+
+- name: Print Apache Httpd comm. port no.
+  debug:
+    msg: "Apache Httpd communication port no: {{ apache_ajp_port }}"
+
+- name: Insert firewalld rule for apache ajp listen port (RHEL/CentOS 7.x)
+  firewalld: port={{ apache_ajp_port }}/tcp permanent=true state=enabled immediate=yes
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"

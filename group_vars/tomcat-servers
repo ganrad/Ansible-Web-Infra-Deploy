@@ -1,0 +1,8 @@
+# Variables declaration file for Apache Tomcat servers
+# UDP Advertisement port where Apache httpd web server publishes it's AJP communication port no.
+apache_adv_port: 23364
+
+# Admin user/pwd for Tomcat default manager-gui user:
+
+admin_username: admin
+admin_password: admin123
