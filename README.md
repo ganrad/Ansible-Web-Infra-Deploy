@@ -19,14 +19,14 @@ For easy and quick reference, readers can refer to the following on-line resourc
 9.  [mod_cluster Apache Httpd Load Balancer](http://mod-cluster.jboss.org/)
 
 ## Description
-This project provides Ansible based automation scripts for implementing a multi-server (node) 2-tier web application deployment architecture.  Typically, in a 2-tier web application operational architecture, components within tier-1 constitute web / proxy servers.  These servers act as a reverse proxy and include a load balancer component which intelligently distributes the incoming http requests to backend application server instances running on multiple machines.  Tier-2 components in this topology represent application server instances.  In this project, we will learn how to use Ansible to automate the installation, configuration and deployment of web infrastructure components in both tiers.
+This project provides Ansible based automation scripts for implementing a multi-server (node) 2-tier web application deployment architecture.  Typically, in a 2-tier operational architecture, components within tier-1 constitute web / proxy servers.  These servers act as a reverse proxy and include a load balancer component which intelligently distributes the incoming http requests to backend application server instances running on multiple machines.  Tier-2 components in this topology represent application server instances.  In this project, we will learn how to use Ansible to automate the installation, configuration and deployment of web infrastructure components in both tiers.
 
-For this project, the widely popular and battle tested Apache Web/Httpd server will be deployed in tier-1.  And for tier-2, the tried and true Apache Tomcat server will be used as the backend Java application server.  Rationale behind choosing these components:
+For this project, the widely popular and battle tested *Apache Web/Httpd Server* will be deployed in tier-1.  And for tier-2, the tried and true *Apache Tomcat Server* will be used as the backend Java application server.  Although, there are many benefits and advantages for choosing these open source web infrastructure components, the top two reasons which really stand out are:
 
 1.  Apache Web (Httpd) Server currently powers approximately 70% of the web sites on the internet.  
 2.  Apache Tomcat has close to 70% penetration in the enterprise data center.
 
-Red Hat Inc., provides tested, certified and supported versions of the two most trusted web application server components (or runtimes) listed above.  *Red Hat JBoss Web Server* (JWS) is a software bundle which includes the following components:
+Red Hat Inc., provides tested, certified and supported versions of the two most trusted web application server components (or runtimes) listed above.  *Red Hat JBoss Web Server* (JWS) is a software bundle which includes the following *Open Source* components/libraries:
 
 1.  Apache Web/Httpd Server (v2.4.x)
 2.  Apache Tomcat application servers (v7.x & v8.x)
@@ -34,13 +34,17 @@ Red Hat Inc., provides tested, certified and supported versions of the two most 
 4.  Load balancer plugins - mod_jk and mod_cluster.  (In comparison to 'mod_jk', 'mod_cluster' requires minimal configuration and is an intelligent load balancer.  Refer to the mod_cluster project website for more details).
 
 ## Configure and Deploy the web infrastructure components
-The steps outlined in the following sections (below) explain in detail how to configure the provided Ansible playbooks in order to deploy a farm of Apache Web and Apache Tomcat servers across multiple remote machines (or nodes).
+The steps outlined in the following sections (below) explain in detail how to configure the provided Ansible playbooks in order to deploy a farm of Apache Web and Apache Tomcat servers across multiple remote machines (nodes).
 
-### A] Modify Ansible scripts to configure the Apache Web Server instance(s)
+### A] Pre-Requisities
+1.  Ansible must be installed on the *'Controller'* machine.  This is the machine where the Ansible engine runs the playbooks. Ansible is an agentless automation engine and so no Ansible components are required to be present on the remote machines.  Software configuration tasks will be executed on the remote machines via SSH.
+2.  Ansible uses 'SSH' (Secure Shell) protocol to securely login into remote machines and execute configuration tasks.  Therefore, ssh keys (private and public key) should be generated and configured on both a) The Ansible Controller machine and  b) The remote machines where the web infrastructure components will be deployed.
 
-### B] Modify Ansible scripts to configure the Apache Tomcat Server instance(s)
+### B] Modify Ansible scripts to configure the Apache Web Server instance(s)
 
-### C] Run Ansible playbook to deploy the web infrastructure components
+### C] Modify Ansible scripts to configure the Apache Tomcat Server instance(s)
 
-### D] (Optional) Run Ansible playbook to un-deploy web infrastructure components
+### D] Run Ansible playbook to deploy the web infrastructure components
+
+### E] (Optional) Run Ansible playbook to un-deploy web infrastructure components
 
