@@ -35,12 +35,12 @@ Red Hat Inc., provides tested, certified and supported versions of the two most 
 4.  Load balancer plugins - mod_jk and mod_cluster.  (In comparison to 'mod_jk', 'mod_cluster' requires minimal configuration and is an intelligent load balancer.  Refer to the mod_cluster project website for more details).
 
 ## Configure and Deploy the Web Application Infrastructure components
-The steps outlined in the following sections (below) explain in detail how to configure the provided Ansible scripts in order to deploy a farm of Apache Web/Httpd and Apache Tomcat servers across multiple remote machines (nodes).
+The steps outlined in the following sections (below) explain in detail how to configure the provided Ansible scripts in order to deploy a farm of Apache Web/Httpd and Apache Tomcat servers across multiple hosts/machines.
 
 ### A] Pre-Requisities
-1.  Ansible must be installed on the *'Controller'* machine.  This is the machine where the Ansible engine runs the playbooks. Ansible is an agentless automation engine and so no Ansible components are required to be present on the remote machines.  Software configuration tasks will be executed on the remote machines via SSH.
-2.  Ansible uses 'SSH' (Secure Shell) protocol to securely login into remote machines and execute software configuration tasks.  Therefore, ssh keys (private and public key) should be generated and configured on both a) The Ansible Controller machine and  b) The remote machines where the web infrastructure components will be deployed.
-3.  Clone this git repository into a local directory on your Ansible *Controller* machine.  Ensure the Linux user you will be using to run the Ansible playbooks has *execute* permissions for this directory and all sub-directories (and files) below it. 
+1.  Ansible must be installed on the *'Controller'* machine.  This is the machine where the Ansible engine runs the playbooks. Ansible is an agentless automation engine and therefore no Ansible components are required to be present on the target hosts/machines.  Software configuration tasks will be executed on the target machines via SSH.
+2.  Ansible uses 'SSH' (Secure Shell) protocol to securely login into remote machines and execute software configuration tasks.  Therefore, ssh keys (private and public key) should be generated and configured on both a) The Ansible Controller host and  b) The target machines where the web infrastructure components will be deployed.
+3.  Clone this git repository into a local directory on your Ansible *Controller* host.  Ensure the Linux user you will be using to run the Ansible playbooks has *execute* permissions for this directory and all sub-directories (and files) below it. 
 
 ### B] Modify Ansible scripts to configure the Apache Web Server instance(s)
 Review and modify the following files/scripts to meet your requirements.
