@@ -6,6 +6,7 @@ Ansible is a simple agentless automation technology that has caught the world of
 1.  This project assumes readers are familiar with writing simple Ansible automation scripts using the YAML language and/or have prior experience working with other IT infrastructure automation tools such as Chef and Puppet.
 2.  This project was tested with Ansible v2.2.1 and Red Hat JBoss Web Server v3.1.  The provided Ansible scripts can be easily modified to deploy vanilla (Apache community bits) Apache Web/Httpd and Apache Tomcat 7/8 servers if needed.
 3.  Apache Web/Httpd Server can be configured to use either 'mod_jk' or 'mod_cluster' load balancer plugins.  The Apache Httpd Server bundled with JBoss Core Services Collection is pre-configured to use 'mod_cluster' as the load balancer by default.  Therefore, the Apache Web and Tomcat servers deployed by the Ansible playbooks in this project will use 'mod_cluster' as the load balancer.
+4.  'mod_cluster' load balancer can dynamically discover backend Apache Tomcat worker instances (nodes) and register them.  To use this dynamic discovery feature, UDP multicast has to be enabled on all hosts running both Apache Web/Httpd and Apache Tomcat servers.  Although, it's possible (& supported) to configure the backend Apache Tomcat worker instances with a list of Apache Web/Httpd servers/IP's (static discovery), this project uses the dynamic discovery feature.
 
 For easy and quick reference, readers can refer to the following on-line resources as needed.
 
@@ -40,7 +41,8 @@ The steps outlined in the following sections (below) explain in detail how to co
 ### A] Pre-Requisities
 1.  Ansible must be installed on the *'Controller'* machine.  This is the machine where the Ansible engine runs the playbooks. Ansible is an agentless automation engine and therefore no Ansible components are required to be present on the target hosts/machines.  Software configuration tasks will be executed on the target machines via SSH.
 2.  Ansible uses 'SSH' (Secure Shell) protocol to securely login into remote machines and execute software configuration tasks.  Therefore, ssh keys (private and public key) should be generated and configured on both a) The Ansible Controller host and  b) The target machines where the web infrastructure components will be deployed.
-3.  Clone this git repository into a local directory on your Ansible *Controller* host.  Ensure the Linux user you will be using to run the Ansible playbooks has *execute* permissions for this directory and all sub-directories (and files) below it. 
+3.  Clone this git repository into a local directory on your Ansible *Controller* host.  For all intents and purposes, this directory will be referred to as the project **root** directory for the remainder of this text. 
+4.  Ensure the Linux user you will be using to run the Ansible playbooks has *execute* permissions for the project *root* directory and all sub-directories (and files) beneath it.
 
 ### B] Modify Ansible scripts to configure the Apache Web Server instance(s)
 Review and modify the following files/scripts to meet your requirements.
@@ -50,16 +52,34 @@ Review and modify the following files/scripts to meet your requirements.
 4.  **roles/apacheHttpd/files/00-mpm.conf**: Modify the Apache Httpd pre-fork worker (or MPM process) parameters as needed to suit your requirements.  By default, the Apache Httpd Server process will run in 'pre-fork' mode. The Httpd server process will spawn one worker process upon booting up and spawn a maximum of 256 worker processes (under maximum load).  Refer to the Apache Httpd Server documentation (website) for further details.
 5.  **roles/apacheHttpd/templates/httpd.conf**: This is the main Apache Httpd server configuration file.  Review this file and make changes as per your requirements (logging, ServerAdmin ....).
 6.  **roles/apacheHttpd/templates/mod_cluster.conf**: This is the configuration file for mod_cluster load balancer.  Go thru the mod_cluster documentation website and make changes as necessary.
-7.  **roles/apacheHttpd/tasks/main.yml**: This file contains the set of configuration tasks required to install, configure and deploy Apache Httpd Server on remote machines.  Ansible (engine) will read the task list sequentially and execute each task on each configured host/machine. 
+7.  **roles/apacheHttpd/tasks/main.yml**: This file contains the set of configuration tasks required to install, configure and deploy Apache Httpd Server on remote machines.  Ansible (engine) will read the task list sequentially and execute each configuration task on each target host/machine. 
 
 ### C] Modify Ansible scripts to configure the Apache Tomcat Server instance(s)
 Review and modify the following files/scripts to meet your requirements.
 1.  **hosts**: Under section '[tomcat-servers], specify IP Addresses (or host aliases) for the hosts/machines where Apache Tomcat Server binaries needs to be installed and deployed.  Each host IP address or alias should be specified in a separate line within this file.  If you are specifying host aliases (instead of IP addresses), then the DNS server should be able to resolve the host aliases to IP addresses correctly.  As a result of running the Ansible playbook, an instance of Apache Tomcat Server will be deployed on each one of the hosts specified in this file.
 2.  **groups_vars/tomcat-servers**: Review the variables and their default values in this YAML file and specify appropriate values to meet your requirements.  A comment line (prefixed with '#') is included above each variable to denote it's purpose.
-3.  **roles/tomcat/vars/main.yml**: Use this file to configure multiple Tomcat server instances on each host/machine.  By default, only one Apache Tomcat Server instance (node) will be deployed on each host.  For deploying multiple Tomcat instances per host, simply copy and paste the node definition (starting at *'node01'*) stanza to deploy as many instances per host as needed.  Remember to provide unique values for the node name and port variables.
-4.  **roles/tomcat/files/webapps**: Drop web application *WAR* files in this directory.  All WAR files will be deployed to every Apache Tomcat instance on every host/machine.
+3.  **roles/tomcat/vars/main.yml**: Use this file to configure multiple Tomcat server instances on each host/machine.  By default, only one Apache Tomcat Server instance (node) will be deployed on each host.  For deploying multiple Tomcat instances per host, simply copy and paste the node definition (starting at *'node01'*) stanza to deploy as many instances per host as needed.  Remember to provide unique values for the node *name* and *_port* variables.
+4.  **roles/tomcat/files/webapps**: Drop web application archive (*WAR*) files into this directory.  All WAR files in this directory will be deployed to every Apache Tomcat instance on every host/machine.
+5.  **roles/tomcat/templates/<...> **:  Review all Ansible (Jinja2) template files in this directory.  In Ansible, templates are essentially configuration files (Web/Tomcat) containing substitution parameters (variables).  The Ansible engine replaces these parameters with actual values from a dictionary file at runtime.  This is an extremely powerful feature that allows a web/application server on each host to be configured with a different set of parameter values.  Refer to the Ansible documentation for more details.
+6.  **roles/tomcat/tasks/main.yml**: This file contains the set of configuration tasks required to install, configure and deploy Apache Tomcat Server on remote machines.  Ansible (engine) will read the task list sequentially and execute each configuration task on each target host/machine.
 
 ### D] Run Ansible playbook to deploy the web infrastructure components
+Using a terminal window, run the following commands in the project *root* directory to deploy the web infrastructure components on all target hosts.  Upon successful execution of the playbook (all tasks completed OK), the web infrastructure components on all the target hosts should be started and ready to serve web application requests.
+
+1.  Perform a syntax check on the *install* playbook
+    ```
+    $ ansible-playbook -i hosts install.yml --syntax-check
+    ```
+2.  Run the *install* playbook
+    ```
+    $ ansible-playbook -i hosts install.yml
+    ```
+    After the Ansible playbook execution finishes, task execution count for each host (classified by *Ok, Changed, Unreachable & Failed*) will be printed.  If the playbook execution fails on a given host, Ansible will print a error message detailing the task which failed and the reason for failure.
 
 ### E] (Optional) Run Ansible playbook to un-deploy web infrastructure components
+Run the following command in the project *root* directory to undeploy (Uninstall) all web infrastructure components on all target hosts.  Bear in mind, this command will not only stop all web infrastructure components running on the respective hosts but it will also undeploy/uninstall all components.
 
+1.  Run the *install* playbook
+    ```
+    $ ansible-playbook -i hosts stop-servers.yml
+    ```
