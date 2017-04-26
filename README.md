@@ -5,8 +5,9 @@ Ansible is a simple agentless automation technology that has caught the world of
 **Important Notes:** 
 1.  This project assumes readers are familiar with writing simple Ansible automation scripts using the YAML language and/or have prior experience working with other IT infrastructure automation tools such as Chef and Puppet.
 2.  This project was tested with Ansible v2.2.1 and Red Hat JBoss Web Server v3.1.  The provided Ansible scripts can be easily modified to deploy vanilla (Apache community bits) Apache Web/Httpd and Apache Tomcat 7/8 servers if needed.
-3.  Apache Web/Httpd Server can be configured to use either 'mod_jk' or 'mod_cluster' load balancer plugins.  The Apache Httpd Server bundled with JBoss Core Services Collection is pre-configured to use 'mod_cluster' as the load balancer by default.  Therefore, the Apache Web and Tomcat servers deployed by the Ansible playbooks in this project will use 'mod_cluster' as the load balancer.
-4.  'mod_cluster' load balancer can dynamically discover backend Apache Tomcat worker instances (nodes) and register them.  To use this dynamic discovery feature, UDP multicast has to be enabled on all hosts running both Apache Web/Httpd and Apache Tomcat servers.  Although, it's possible (& supported) to configure the backend Apache Tomcat worker instances with a list of Apache Web/Httpd servers/IP's (static discovery), this project uses the dynamic discovery feature.
+3.  This project was only tested on hosts running Red Hat Enterprise Linux v7.1+.  The Ansible scripts will have to be modified for deploying the infrastructure components on Windows hosts.
+4.  Apache Web/Httpd Server can be configured to use either 'mod_jk' or 'mod_cluster' load balancer plugins.  The Apache Httpd Server bundled with JBoss Core Services Collection is pre-configured to use 'mod_cluster' as the load balancer by default.  Therefore, the Apache Web and Tomcat servers deployed by the Ansible playbooks in this project will use 'mod_cluster' as the load balancer.
+5.  'mod_cluster' load balancer can dynamically discover backend Apache Tomcat worker instances (nodes) and register them.  To use this dynamic discovery feature, UDP multicast has to be enabled on all hosts running both Apache Web/Httpd and Apache Tomcat servers.  Although, it's possible (& supported) to configure the backend Apache Tomcat worker instances with a list of Apache Web/Httpd servers/IP's (static discovery), this project uses the dynamic discovery feature.
 
 For easy and quick reference, readers can refer to the following on-line resources as needed.
 
@@ -77,9 +78,11 @@ Using a terminal window, run the following commands in the project *root* direct
     After the Ansible playbook execution finishes, task execution count for each host (classified by *Ok, Changed, Unreachable & Failed*) will be printed.  If the playbook execution fails on a given host, Ansible will print a error message detailing the task which failed and the reason for failure.
 
 ### E] (Optional) Run Ansible playbook to un-deploy web infrastructure components
-Run the following command in the project *root* directory to undeploy (Uninstall) all web infrastructure components on all target hosts.  Bear in mind, this command will not only stop all web infrastructure components running on the respective hosts but it will also undeploy/uninstall all components.
+To undeploy (Uninstall) all web infrastructure components on all target hosts, run the following command in the project *root* directory.  Bear in mind, this command will not only stop all web infrastructure components running on the respective hosts but it will also undeploy/uninstall all components.
 
 1.  Run the *install* playbook
     ```
     $ ansible-playbook -i hosts stop-servers.yml
     ```
+
+Congratulations!  You have now successfully deployed your Java web applications on the most trusted and proven Open Source Web Infrastructure components.
