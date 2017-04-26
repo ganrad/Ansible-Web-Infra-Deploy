@@ -39,11 +39,14 @@ The steps outlined in the following sections (below) explain in detail how to co
 ### A] Pre-Requisities
 1.  Ansible must be installed on the *'Controller'* machine.  This is the machine where the Ansible engine runs the playbooks. Ansible is an agentless automation engine and so no Ansible components are required to be present on the remote machines.  Software configuration tasks will be executed on the remote machines via SSH.
 2.  Ansible uses 'SSH' (Secure Shell) protocol to securely login into remote machines and execute software configuration tasks.  Therefore, ssh keys (private and public key) should be generated and configured on both a) The Ansible Controller machine and  b) The remote machines where the web infrastructure components will be deployed.
+3.  Clone this git repository into a local directory on your Ansible *Controller* machine.  Ensure the Linux user you will be using to run the Ansible playbooks has *execute* permissions for this directory and all sub-directories (and files) below it.   
 
 ### B] Modify Ansible scripts to configure the Apache Web Server instance(s)
-Modify the following files and substitute appropriate values for variables in order to meet your requirements.
+Modify the following files to meet your requirements.
 1.  **hosts**: Under section '[web-servers], specify IP Addresses (or host aliases) for the hosts/machines where the Apache Web/HTTPD Server needs to be installed and deployed.  Each host IP address or alias should be specified in a separate line.  If you are specifying host aliases (instead of IP addresses), then the DNS server should be able to resolve the aliases to IP addresses correctly.  An instance of Apache Web/Httpd Server will be deployed on each one of the hosts specified in this file.
-2.  **groups_vars/web-servers**: Substitute values for each one of these variables per your requirements.
+2.  **groups_vars/web-servers**: Review the default variable values in this YAML file and substitute appropriate values to meet your requirements.  A comment line (prefixed with '#') is included above each variable to denote it's purpose.
+3.  **roles/apacheHttpd/files**: Download the Red Hat JBoss Core Services Httpd Server binaries from the Red Hat customer support portal and drop the *zip* file into this directory.  Alternatively, download the Apache Httpd Server binaries from the Apache Website and drop the 'zip' file into this directory.
+4.  **roles/apacheHttpd/files/00-mpm.conf**: Modify the Apache pre-fork worker (or MPM process) parameters as needed to suit your requirements.  By default, the Apache Httpd Server will run in 'pre-fork' mode and the httpd process will spawn one worker process upon booting up and spawn a maximum of 256 worker processes (maximum).  Refer to the Apache Httpd Server documentation (website) for configuring these values.
 
 ### C] Modify Ansible scripts to configure the Apache Tomcat Server instance(s)
 
